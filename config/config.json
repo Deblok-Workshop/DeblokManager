@@ -1,3 +1,4 @@
 {
-    "port-range":"59000-59100"
+    "port-range":"59000-59100",
+    "webserver": {"port":"8100"}
 }
