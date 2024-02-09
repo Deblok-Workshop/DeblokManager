@@ -1,0 +1,2 @@
+lscr.io/linuxserver/firefox
+lscr.io/linuxserver/chromium
