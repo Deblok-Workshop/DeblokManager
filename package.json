@@ -10,6 +10,8 @@
   },
   "dependencies": {
     "@eelkevdbos/elysia-basic-auth": "^1.4.1",
-    "elysia": "^0.8.16"
+    "dockerode": "^4.0.2",
+    "elysia": "^0.8.16",
+    "ssh2": "^1.15.0"
   }
 }

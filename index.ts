@@ -1,14 +1,16 @@
 import { Elysia, error } from "elysia";
 import { basicAuth } from '@eelkevdbos/elysia-basic-auth'
+import docker from "dockerode"
 
 const conffile = Bun.file("config/config.json")
 const config = JSON.parse(await conffile.text())
 
-if (process.env.USER != "root" || !config['should-be-running-as'].includes(process.env.USER)) {
-    console.error('Due to the amount of Docker usage, this server should be running as root,')
-    console.error('or some user whom can access docker without sudo.')
-    process.exit(2)
-}
+//if (process.env.USER != "root" || !config['should-be-running-as'].includes(process.env.USER)) {
+//    console.error('Due to the amount of Docker usage, this server should be running as root,')
+//    console.error('or some user whom can access docker without sudo.')
+//    process.exit(2)
+//}
+// test if Dockerode NEEDS root first.
 
 let netaddr = '[::1]'
 netaddr = require('node:os').hostname()
@@ -22,6 +24,11 @@ server.use(
 
 server.get("/", () => {
     return "DeblokManager is alive!";
+})
+
+
+server.get("/containers/list", async ({body, set}) => {
+    return docker.listContainers()
 })
 
 server.post("/containers/request", async ({body, set}) => {
