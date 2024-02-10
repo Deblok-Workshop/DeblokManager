@@ -195,7 +195,13 @@ server.post("/containers/create", async ({body, set}) => {
 server.post("/containers/kill", async ({ body, set }) => {
     const b:any=body // the body variable is actually a string, this is here to fix a ts error
     var bjson:any={id:""} // boilerplate to not piss off TypeScript.
-
+    try {
+        bjson = JSON.parse(b);
+    } catch (e) {
+        console.error(e);
+        set.status = 400;
+        return "ERR: Bad JSON";
+    }
     try {
         const container = docker.getContainer(bjson.id);
         await container.kill();
@@ -210,7 +216,13 @@ server.post("/containers/kill", async ({ body, set }) => {
 server.post("/containers/delete", async ({ body, set }) => {
     const b:any=body // the body variable is actually a string, this is here to fix a ts error
     var bjson:any={id:""} // boilerplate to not piss off TypeScript.
-
+    try {
+        bjson = JSON.parse(b);
+    } catch (e) {
+        console.error(e);
+        set.status = 400;
+        return "ERR: Bad JSON";
+    }
     try {
         const container = docker.getContainer(bjson.id);
         await container.remove();
