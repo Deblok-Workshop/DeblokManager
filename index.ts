@@ -19,7 +19,12 @@ async function ping(url: string): Promise<string> {
     }
 }
 
-console.log(await ping('http://127.0.0.1:2375/_ping'));
+if (require('os').platform() != "linux") {
+    console.error('FATAL: Incompatibility detected!')
+    console.error('        - Due to the heavy use of Docker, DeblokManager can only run on Linux.')
+    process.exit(2)
+}
+
 if (await ping('http://127.0.0.1:2375/_ping') == "down") {
     console.warn('Extra configuration is needed:');
     console.error(' - The Docker Daemon (dockerd) needs to be running via TCP (:2375).');
