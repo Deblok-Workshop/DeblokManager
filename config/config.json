@@ -1,5 +1,6 @@
 {
     "port-range":"59000-59100",
     "webserver": {"port":"8100"},
-    "authentication": {"username":"admin","password":"admin"}
+    "authentication": {"username":"admin","password":"admin"},
+    "should-be-running-as":["root"]
 }
