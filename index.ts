@@ -68,14 +68,14 @@ server.get("/containers/list", async () => {
 
 async function createContainer(containerOptions:any) {
     try {
-        containerOptions.HostConfig = { AutoRemove: false, ...containerOptions.HostConfig };
-        containerOptions.Cmd.push('&');
+        containerOptions.HostConfig = { AutoRemove: true, ...containerOptions.HostConfig };
+        containerOptions.Cmd = containerOptions.Cmd || ['yes', '>', '/dev/null']; // yes > /dev/null is the only way i can think of keeping a docker container running forever
         const container = await docker.createContainer(containerOptions);
         
         await container.start();
         return `Container ${container.id} created and started successfully.`;
     } catch (err) {
-        console.error('Error creating container:', err);
+        console.error(err);
         throw err;
     }
 }
