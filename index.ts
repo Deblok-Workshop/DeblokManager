@@ -1,9 +1,29 @@
 import { Elysia, error } from "elysia";
 import { basicAuth } from '@eelkevdbos/elysia-basic-auth'
-import docker from "dockerode"
+import Docker from "dockerode"
 
 const conffile = Bun.file("config/config.json")
 const config = JSON.parse(await conffile.text())
+
+async function ping(url: string): Promise<string> {
+    try {
+      const response = await fetch(url);
+      if (response.status >= 200 && response.status < 400) {
+        return 'up';
+      } else {
+        return 'down';
+      }
+    } catch (error) {
+      return 'down';
+    }
+  
+  }
+
+if (await ping('http://localhost:2375') == "down") {
+    console.warn('Extra configuration is needed:')
+    console.error(' - Docker needs to be running via TCP (:2375).')
+    process.exit(2)
+}
 
 //if (process.env.USER != "root" || !config['should-be-running-as'].includes(process.env.USER)) {
 //    console.error('Due to the amount of Docker usage, this server should be running as root,')
@@ -11,6 +31,8 @@ const config = JSON.parse(await conffile.text())
 //    process.exit(2)
 //}
 // test if Dockerode NEEDS root first.
+
+const docker = new Docker({ host: '127.0.0.1', port: 2375 });
 
 let netaddr = '[::1]'
 netaddr = require('node:os').hostname()
@@ -28,7 +50,18 @@ server.get("/", () => {
 
 
 server.get("/containers/list", async ({body, set}) => {
-    return docker.listContainers()
+    let containerList:any[] = []
+    docker.listContainers((err: any, containers: Docker.ContainerInfo[]) => {
+        if (err) {
+          console.error(err);
+          return;
+        }
+      
+        containers.forEach((container: Docker.ContainerInfo) => {
+          containerList[containerList.length] = `${container.Id}, ${container.Names[0]}, ${container.Status}`
+        });
+      });
+      return containerList
 })
 
 server.post("/containers/request", async ({body, set}) => {
