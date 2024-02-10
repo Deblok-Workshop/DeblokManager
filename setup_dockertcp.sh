@@ -1,5 +1,19 @@
 #!/bin/bash
 
+VERBOSE=false
+
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    -v|--verbose)
+      VERBOSE=true
+      shift
+      ;;
+    *)
+      echo "WARN: Unknown option: $1 ... but I'm continuing because crashing over a goofy param is stupid."
+      ;;
+  esac
+done
+
 if [[ $EUID -ne 0 ]]; then
   echo "ERR: This script must be run as root."
   exit 1
@@ -10,13 +24,32 @@ if [ ! -d "/etc/systemd" ]; then
   exit 1
 fi
 
-rm /etc/docker/daemon.json # too lazy to append
+if [ -e "/etc/docker/daemon.json" ]; then
+  rm /etc/docker/daemon.json # too lazy to append
+fi
+
+if [ "$VERBOSE" = true ]; then
+  echo "Configuring Docker to run over TCP..."
+  echo "Adding values to Dockerd's daemon.json file"
+fi
+
 echo '{"hosts": ["tcp://0.0.0.0:2375", "unix:///var/run/docker.sock"]}' > /etc/docker/daemon.json
+
+if [ "$VERBOSE" = true ]; then
+  echo "Setting up systemd's override.conf for Docker"
+fi
+
 mkdir /etc/systemd/system/docker.service.d/
 touch /etc/systemd/system/docker.service.d/override.conf
 echo "[Service]
  ExecStart=
  ExecStart=/usr/bin/dockerd" > /etc/systemd/system/docker.service.d/override.conf
+if [ "$VERBOSE" = true ]; then
+  echo "Reloading systemd daemon"
+fi
 systemctl daemon-reload
+if [ "$VERBOSE" = true ]; then
+  echo "Restarting Docker service"
+fi
 systemctl restart docker.service
 echo "Docker should be set up over TCP. Check for any errors here if it doesn't work."
