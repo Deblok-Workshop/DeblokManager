@@ -25,6 +25,9 @@ if [ ! -d "/etc/systemd" ]; then
 fi
 
 if [ -e "/etc/docker/daemon.json" ]; then
+  if [ "$VERBOSE" = true ]; then
+   echo "Removing existing daemon.json"
+  fi
   rm /etc/docker/daemon.json # too lazy to append
 fi
 
@@ -39,8 +42,24 @@ if [ "$VERBOSE" = true ]; then
   echo "Setting up systemd's override.conf for Docker"
 fi
 
-mkdir /etc/systemd/system/docker.service.d/
+
+
+if [ ! -d "/etc/systemd/system/docker.service.d/" ]; then
+   if [ "$VERBOSE" = true ]; then
+    echo "Making docker.service.d directory"
+   fi
+   mkdir /etc/systemd/system/docker.service.d/
+fi
+if [ -e "/etc/systemd/system/docker.service.d/override.conf" ]; then
+  if [ "$VERBOSE" = true ]; then
+    echo "Removing existing override.conf"
+  fi
+  rm /etc/systemd/system/docker.service.d/override.conf
+fi
 touch /etc/systemd/system/docker.service.d/override.conf
+if [ "$VERBOSE" = true ]; then
+    echo "Writing configuration to override.conf"
+fi
 echo "[Service]
  ExecStart=
  ExecStart=/usr/bin/dockerd" > /etc/systemd/system/docker.service.d/override.conf
