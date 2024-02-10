@@ -66,9 +66,12 @@ server.get("/containers/list", async () => {
     return dl;
 });
 
-async function createContainer(containerOptions: Object) {
+async function createContainer(containerOptions:any) {
     try {
+        containerOptions.HostConfig = { AutoRemove: false, ...containerOptions.HostConfig };
+        containerOptions.Cmd.push('&');
         const container = await docker.createContainer(containerOptions);
+        
         await container.start();
         return `Container ${container.id} created and started successfully.`;
     } catch (err) {
@@ -165,7 +168,7 @@ server.post("/containers/create", async ({body, set}) => {
     } catch (err) {
         set.status = 500;
         console.error(err)
-        return "ERR: Failed to create container.";
+        return err;
     }
 });
 
