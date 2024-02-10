@@ -2,6 +2,7 @@ import { Elysia, error } from "elysia";
 import { basicAuth } from '@eelkevdbos/elysia-basic-auth';
 import Docker from "dockerode";
 import Bun from "bun";
+import { networkConnections } from 'systeminformation';
 
 const conffile = Bun.file("config/config.json");
 const config = JSON.parse(await conffile.text());
@@ -171,6 +172,36 @@ server.post("/containers/create", async ({body, set}) => {
         return err;
     }
 });
+
+server.post("/containers/delete", async ({body, set}) => {
+   // TODO
+   set.status = 500
+   return "ERR: Not Implemented"
+});
+
+
+function getPorts(): number[] {
+    const range: number[] = config["port-range"].split('-').map(Number);
+    const startPort: number = range[0];
+    const endPort: number = range[1];
+
+    const usedPorts: number[] = Object.values(networkConnections())
+        .filter(connection => connection.protocol === 'TCP' || connection.protocol === 'UDP')
+        .map(connection => connection.localport);
+
+    const availablePorts: number[] = [];
+    for (let port = startPort; port <= endPort; port++) {
+        if (!usedPorts.includes(port)) {
+            availablePorts.push(port);
+        }
+    }
+
+    return availablePorts;
+}
+
+server.get("/ports/list", async ({body, set}) => {
+    return getPorts()
+ });
 
 console.log(`Listening on port ${config.webserver.port} or`);
 console.log(` │ 0.0.0.0:${config.webserver.port}`);
