@@ -58,8 +58,19 @@ server.get("/containers/list", async ({body, set}) => {
             }
         });
     });
-    return dl
-})
+    return dl;
+});
+
+async function createContainer(containerOptions: Object) {
+    try {
+        const container = await docker.createContainer(containerOptions);
+        await container.start();
+        return `Container ${container.id} created and started successfully.`;
+    } catch (err) {
+        console.error('Error creating container:', err);
+        throw err;
+    }
+}
 
 server.post("/containers/create", async ({body, set}) => {
     const b:any=body // the body variable is actually a string, this is here to fix a ts error
@@ -78,69 +89,34 @@ server.post("/containers/create", async ({body, set}) => {
         set.status = 400;
         return "ERR: Name and Image fields are required.";
     }
-  
-    // check image whitelist
-    const wlFile = Bun.file("./config/list.txt");
-    const wlImages = await (await wlFile.text()).split('\n')
-    if (!wlImages.includes(bjson.image)) {
-      set.status = 400;
-      return "ERR: The specified image is not whitelisted.";
-    }
-  
-    // make sure no dumbass eats my entire computer frfr
-    const maxRam = config.resources.maxram;
-    const maxCores = config.resources.maxcores;
-    const ramRegex = /^(\d+)([GMB])$/;
-    const ramMatch = bjson.resources.ram.match(ramRegex);
-    
-    if (!ramMatch || ramMatch.length !== 3) {
-      set.status = 400;
-      return "ERR: Invalid RAM format. Use G for gigabytes, M for megabytes, and B for bytes.";
-    }
-    
-    const ramValue = parseInt(ramMatch[1]);
-    const ramUnit = ramMatch[2];
-    
-    const convertToBytes = (value: number, unit: string): number => {
-      switch (unit) {
-        case "G":
-          return value * 1024 * 1024 * 1024;
-        case "M":
-          return value * 1024 * 1024;
-        case "B":
-          return value;
-        default:
-          return NaN;
-      }
+
+    // Set up container creation options
+    const containerOptions = {
+        name: bjson.name,
+        Image: bjson.image,
+        HostConfig: {
+            Memory: bjson.resources.ram, // Set memory limit
+            NanoCPUs: bjson.resources.cores * 1e9, // Set CPU limit
+            PortBindings: {}, // Set port bindings
+        }
     };
-    
-    const ramInBytes = convertToBytes(ramValue, ramUnit);
-    
-    if (isNaN(ramInBytes) || ramInBytes > maxRam) {
-      set.status = 400;
-      return `ERR: RAM exceeds the maximum allowed value of ${maxRam}G.`;
+
+    // Bind ports if provided
+    if (bjson.ports && bjson.ports !== "") {
+        const ports = bjson.ports.split(",").map((port: any) => parseInt(port.trim()));
+        ports.forEach((port:number) => {
+            (containerOptions.HostConfig.PortBindings as Record<string, any>)[`${port}/tcp`] = [{ HostPort: `${port}` }];
+        });
     }
-    const coresValue = parseInt(bjson.resources.cores);
-    if (coresValue > maxCores) {
-      set.status = 400;
-      return `ERR: Cores exceed the maximum allowed value of ${maxCores}.`;
+
+    try {
+        const result = await createContainer(containerOptions);
+        return result;
+    } catch (err) {
+        set.status = 500;
+        return "ERR: Failed to create container.";
     }
-  
-    // Check if ports are within the specified range
-    const portRange = config["port-range"].split("-");
-    const minPort = parseInt(portRange[0]);
-    const maxPort = parseInt(portRange[1]);
-  
-    const ports = bjson.ports.split(",").map((port:any) => parseInt(port.trim()));
-    for (const port of ports) {
-      if (isNaN(port) || port < minPort || port > maxPort) {
-        set.status = 400;
-        return `ERR: Port ${port} is outside the allowed range of ${minPort}-${maxPort}.`;
-      }
-    }
-  
-    return "TODO";
-})
+});
 
 console.log(`Listening on port ${config.webserver.port} or`);
 console.log(` │ 0.0.0.0:${config.webserver.port}`);
