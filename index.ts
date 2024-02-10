@@ -72,6 +72,28 @@ async function createContainer(containerOptions: Object) {
     }
 }
 
+function readableToBytes(ramString: string): number {
+    const match = ramString.match(/^(\d+)([GMB])$/);
+
+    if (match && match.length === 3) {
+        const value = parseInt(match[1]);
+        const unit = match[2].toUpperCase();
+
+        switch (unit) {
+            case "G":
+                return value * 1024 * 1024 * 1024;
+            case "M":
+                return value * 1024 * 1024;
+            case "B":
+                return value;
+            default:
+                throw new Error("Invalid RAM unit. Use G, M, or B.");
+        }
+    } else {
+        throw new Error("Invalid RAM format. Use G, M, or B.");
+    }
+}
+
 server.post("/containers/create", async ({body, set}) => {
     const b:any=body // the body variable is actually a string, this is here to fix a ts error
     var bjson:any={"name":"","image":"","resources":{"ram":"","cores":""},"ports":""} // boilerplate to not piss off TypeScript.
@@ -90,6 +112,17 @@ server.post("/containers/create", async ({body, set}) => {
         return "ERR: Name and Image fields are required.";
     }
 
+
+    if (readableToBytes(bjson.resources.ram) > readableToBytes(config.resources.maxram)) {
+        set.status = 400;
+        return `ERR: RAM exceeds the maximum allowed value of ${config.resources.maxram}.`;
+    }
+
+
+    if (parseFloat(bjson.resources.cores) > parseFloat(config.resources.maxcores)) {
+        set.status = 400;
+        return `ERR: vCores exceed the maximum allowed value of ${config.resources.maxcores}.`;
+    }
     // Set up container creation options
     const containerOptions = {
         name: bjson.name,
@@ -101,11 +134,23 @@ server.post("/containers/create", async ({body, set}) => {
         }
     };
 
-    // Bind ports if provided
     if (bjson.ports && bjson.ports !== "") {
-        const ports = bjson.ports.split(",").map((port: any) => parseInt(port.trim()));
-        ports.forEach((port:number) => {
-            (containerOptions.HostConfig.PortBindings as Record<string, any>)[`${port}/tcp`] = [{ HostPort: `${port}` }];
+        const portPairs = bjson.ports.split(",").map((portPair: any) => portPair.trim());
+        const portRange = config["port-range"].split("-").map((port: string) => parseInt(port.trim()));
+        const minPort = portRange[0];
+        const maxPort = portRange[1];
+        const invalidPorts = portPairs
+            .map((portPair: string) => parseInt(portPair.split(":")[0].trim()))
+            .filter((port: number) => port < minPort || port > maxPort);
+    
+        if (invalidPorts.length > 0) {
+            set.status = 400;
+            return `ERR: External port(s) ${invalidPorts.join(', ')} are outside the allowed range (${minPort} - ${maxPort}).`;
+        }
+    
+        portPairs.forEach((portPair: string) => {
+            const [external, internal] = portPair.split(":").map((port: string) => port.trim());
+            (containerOptions.HostConfig.PortBindings as Record<string, any>)[`${external}/tcp`] = [{ HostPort: internal }];
         });
     }
 
