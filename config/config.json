@@ -1,4 +1,5 @@
 {
     "port-range":"59000-59100",
-    "webserver": {"port":"8100"}
+    "webserver": {"port":"8100"},
+    "authentication": {"username":"admin","password":"admin"}
 }
