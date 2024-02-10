@@ -215,7 +215,7 @@ server.post("/containers/kill", async ({ body, set }) => {
     if (!process.argv.includes('--no-whitelist')) {
         let imagewlfile = Bun.file('config/list.txt')
         let imagewl = (await imagewlfile.text()).split('\n')
-        if (!(bjson.id.toString().contains(imagewl))) {
+        if (!(bjson.id.contains(imagewl))) {
             set.status = 400;
             return "ERR: This image is not whitelisted.";
         }
@@ -244,7 +244,7 @@ server.post("/containers/delete", async ({ body, set }) => {
     if (!process.argv.includes('--no-whitelist')) {
         let imagewlfile = Bun.file('config/list.txt')
         let imagewl = (await imagewlfile.text()).split('\n')
-        if (!(bjson.id.toString().contains(imagewl))) {
+        if (!(bjson.id.contains(imagewl))) {
             set.status = 400;
             return "ERR: This image is not whitelisted.";
         }
