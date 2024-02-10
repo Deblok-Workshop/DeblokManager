@@ -8,6 +8,7 @@ import { Elysia, error } from "elysia";
 import { basicAuth } from '@eelkevdbos/elysia-basic-auth';
 import Docker from "dockerode";
 import Bun from "bun";
+import fs from 'fs';
 import { networkConnections } from 'systeminformation';
 
 const conffile = Bun.file("config/config.json");
@@ -136,12 +137,11 @@ server.post("/containers/create", async ({body, set}) => {
     const b:any=body // the body variable is actually a string, this is here to fix a ts error
     var bjson:any={"name":"","image":"","resources":{"ram":"","cores":""},"ports":""} // boilerplate to not piss off TypeScript.
     if (!process.argv.includes('--no-whitelist')) {
-    let imagewlfile = Bun.file('config/list.txt')
-    let imagewl = (await imagewlfile.text()).split('\n')
-    if (!(bjson.image.toString().contains(imagewl))) {
-        set.status = 400;
-        return "ERR: This image is not whitelisted.";
-    }
+        const imagewl = fs.readFileSync('config/list.txt', 'utf-8').split('\n');
+        if (!imagewl.includes(bjson.id)) {
+          set.status = 400;
+          return "ERR: This image is not whitelisted.";
+        }
 }
     try {
         bjson = JSON.parse(b);
@@ -213,13 +213,12 @@ server.post("/containers/kill", async ({ body, set }) => {
     const b:any=body // the body variable is actually a string, this is here to fix a ts error
     var bjson:any={id:""} // boilerplate to not piss off TypeScript.
     if (!process.argv.includes('--no-whitelist')) {
-        let imagewlfile = Bun.file('config/list.txt')
-        let imagewl = (await imagewlfile.text()).split('\n')
-        if (!(bjson.id.contains(imagewl))) {
-            set.status = 400;
-            return "ERR: This image is not whitelisted.";
+        const imagewl = fs.readFileSync('config/list.txt', 'utf-8').split('\n');
+        if (!imagewl.includes(bjson.id)) {
+          set.status = 400;
+          return "ERR: This image is not whitelisted.";
         }
-    }
+}
     try {
         bjson = JSON.parse(b);
     } catch (e) {
@@ -242,13 +241,12 @@ server.post("/containers/delete", async ({ body, set }) => {
     const b:any=body // the body variable is actually a string, this is here to fix a ts error
     var bjson:any={id:""} // boilerplate to not piss off TypeScript.
     if (!process.argv.includes('--no-whitelist')) {
-        let imagewlfile = Bun.file('config/list.txt')
-        let imagewl = (await imagewlfile.text()).split('\n')
-        if (!(bjson.id.contains(imagewl))) {
-            set.status = 400;
-            return "ERR: This image is not whitelisted.";
+        const imagewl = fs.readFileSync('config/list.txt', 'utf-8').split('\n');
+        if (!imagewl.includes(bjson.id)) {
+          set.status = 400;
+          return "ERR: This image is not whitelisted.";
         }
-    }
+}
     try {
         bjson = JSON.parse(b);
     } catch (e) {
