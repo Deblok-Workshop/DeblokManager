@@ -42,7 +42,7 @@ server.get("/", () => {
     return "DeblokManager is alive!";
 });
 
-server.get("/containers/list", async ({body, set}) => {
+server.get("/containers/list", async () => {
     let dl = await new Promise((resolve, reject) => {
         let containerList: string[] = [];
     
