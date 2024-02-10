@@ -133,8 +133,8 @@ server.post("/containers/create", async ({body, set}) => {
         name: bjson.name,
         Image: bjson.image,
         HostConfig: {
-            Memory: bjson.resources.ram, // Set memory limit
-            NanoCPUs: bjson.resources.cores * 1e9, // Set CPU limit
+            Memory: readableToBytes(bjson.resources.ram), // Set memory limit
+            NanoCPUs: Number(bjson.resources.cores * 1e9), // Set CPU limit
             PortBindings: {}, // Set port bindings
         }
     };
