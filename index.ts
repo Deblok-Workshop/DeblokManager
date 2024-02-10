@@ -27,6 +27,15 @@ async function ping(url: string): Promise<string> {
     }
 }
 
+if (process.argv.includes('--no-whitelist')) {
+    console.warn('WARN: ####################################')
+    console.warn('WARN: # YOU HAVE DISABLED THE WHITELIST! #')
+    console.warn('WARN: ####################################')
+    console.log()
+    console.warn('WARN: Disabling the whitelist allows ANYONE to create/delete/kill ANY Docker container!')
+    console.warn('WARN: This has MAJOR security implications, CTRL+C NOW if this was unintentional.')
+}
+
 if (process.argv.includes('--ignore-linux-check') && require("os").platform() != "linux") {
     console.warn('WARN: Incompatibility detected!')
     console.warn(
@@ -87,6 +96,7 @@ server.get("/containers/list", async () => {
 });
 
 async function createContainer(containerOptions:any) {
+
     try {
         containerOptions.HostConfig = { AutoRemove: true, ...containerOptions.HostConfig };
         containerOptions.Cmd = containerOptions.Cmd || ['yes', '>', '/dev/null']; // yes > /dev/null is the only way i can think of keeping a docker container running forever
@@ -125,7 +135,14 @@ function readableToBytes(ramString: string): number {
 server.post("/containers/create", async ({body, set}) => {
     const b:any=body // the body variable is actually a string, this is here to fix a ts error
     var bjson:any={"name":"","image":"","resources":{"ram":"","cores":""},"ports":""} // boilerplate to not piss off TypeScript.
-
+    if (!process.argv.includes('--no-whitelist')) {
+    let imagewlfile = Bun.file('config/list.txt')
+    let imagewl = (await imagewlfile.text()).split('\n')
+    if (!(bjson.image.toString().contains(imagewl))) {
+        set.status = 400;
+        return "ERR: This image is not whitelisted.";
+    }
+}
     try {
         bjson = JSON.parse(b);
     } catch (e) {
@@ -195,6 +212,14 @@ server.post("/containers/create", async ({body, set}) => {
 server.post("/containers/kill", async ({ body, set }) => {
     const b:any=body // the body variable is actually a string, this is here to fix a ts error
     var bjson:any={id:""} // boilerplate to not piss off TypeScript.
+    if (!process.argv.includes('--no-whitelist')) {
+        let imagewlfile = Bun.file('config/list.txt')
+        let imagewl = (await imagewlfile.text()).split('\n')
+        if (!(bjson.id.toString().contains(imagewl))) {
+            set.status = 400;
+            return "ERR: This image is not whitelisted.";
+        }
+    }
     try {
         bjson = JSON.parse(b);
     } catch (e) {
@@ -216,6 +241,14 @@ server.post("/containers/kill", async ({ body, set }) => {
 server.post("/containers/delete", async ({ body, set }) => {
     const b:any=body // the body variable is actually a string, this is here to fix a ts error
     var bjson:any={id:""} // boilerplate to not piss off TypeScript.
+    if (!process.argv.includes('--no-whitelist')) {
+        let imagewlfile = Bun.file('config/list.txt')
+        let imagewl = (await imagewlfile.text()).split('\n')
+        if (!(bjson.id.toString().contains(imagewl))) {
+            set.status = 400;
+            return "ERR: This image is not whitelisted.";
+        }
+    }
     try {
         bjson = JSON.parse(b);
     } catch (e) {
