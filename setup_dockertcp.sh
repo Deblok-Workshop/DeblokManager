@@ -35,8 +35,8 @@ if [ "$VERBOSE" = true ]; then
   echo "Configuring Docker to run over TCP..."
   echo "Adding values to Dockerd's daemon.json file"
 fi
-
-echo '{"hosts": ["tcp://0.0.0.0:2375", "unix:///var/run/docker.sock"]}' > /etc/docker/daemon.json
+# use 127.0.0.1 instead of 0.0.0.0 to be more secure
+echo '{"hosts": ["tcp://127.0.0.1:2375", "unix:///var/run/docker.sock"]}' > /etc/docker/daemon.json
 
 if [ "$VERBOSE" = true ]; then
   echo "Setting up systemd's override.conf for Docker"
