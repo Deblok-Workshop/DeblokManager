@@ -2,5 +2,8 @@
     "port-range":"59000-59100",
     "webserver": {"port":"8100"},
     "authentication": {"username":"admin","password":"admin"},
-    "should-be-running-as":["root"]
+    "resources":{
+        "maxram":"4G",
+        "maxcores":"2"
+    }
 }

@@ -71,20 +71,94 @@ server.get("/containers/list", async ({body, set}) => {
 server.post("/containers/request", async ({body, set}) => {
     const b:any=body // the body variable is actually a string, this is here to fix a ts error
     var bjson:any={"name":"","image":"","resources":{"ram":"","cores":""},"ports":""} // boilerplate to not piss off TypeScript.
+
     try {
-        bjson=JSON.parse(b)
-    } catch (e) {console.error(e);set.status = 400; return "ERR: Bad JSON"}
+      bjson = JSON.parse(b);
+    } catch (e) {
+      console.error(e);
+      set.status = 400;
+      return "ERR: Bad JSON";
+    }
+  
     if (
-        !bjson['name'] || bjson['name'] == "" ||
-        !bjson['image'] || bjson['image'] == "" ||
-        !bjson['resources'] || JSON.stringify(bjson['resources']) == "{\"ram\":\"\",\"cores\":\"\"}" ||
-        !bjson['ports'] || bjson['ports'] == "" || 
-        !bjson['resources']['ram'] || !bjson['resources']['ram'] ||
-        !bjson['resources']['cores'] || bjson['resources']['cores'] == "" 
-       ) {
-        set.status = 400; return "ERR: One or more fields are missing or invalid."
-       }
-    return "DeblokManager is alive!";
+      !bjson.name ||
+      bjson.name == "" ||
+      !bjson.image ||
+      bjson.image == "" ||
+      !bjson.resources ||
+      JSON.stringify(bjson.resources) == '{"ram":"","cores":""}' ||
+      !bjson.ports ||
+      bjson.ports == "" ||
+      !bjson.resources.ram || // who the fuck prettified this
+      !bjson.resources.cores ||
+      bjson.resources.ram == "" ||
+      bjson.resources.cores == ""
+    ) {
+      set.status = 400;
+      return "ERR: One or more fields are missing or invalid.";
+    }
+  
+    // check image whitelist
+    const wlFile = Bun.file("./config/list.txt");
+    const wlImages = await (await wlFile.text()).split('\n')
+    if (!wlImages.includes(bjson.image)) {
+      set.status = 400;
+      return "ERR: The specified image is not whitelisted.";
+    }
+  
+    // make sure no dumbass eats my entire computer frfr
+    const maxRam = config.resources.maxram;
+    const maxCores = config.resources.maxcores;
+    const ramRegex = /^(\d+)([GMB])$/;
+    const ramMatch = bjson.resources.ram.match(ramRegex);
+    
+    if (!ramMatch || ramMatch.length !== 3) {
+      set.status = 400;
+      return "ERR: Invalid RAM format. Use G for gigabytes, M for megabytes, and B for bytes.";
+    }
+    
+    const ramValue = parseInt(ramMatch[1]);
+    const ramUnit = ramMatch[2];
+    
+    const convertToBytes = (value: number, unit: string): number => {
+      switch (unit) {
+        case "G":
+          return value * 1024 * 1024 * 1024;
+        case "M":
+          return value * 1024 * 1024;
+        case "B":
+          return value;
+        default:
+          return NaN;
+      }
+    };
+    
+    const ramInBytes = convertToBytes(ramValue, ramUnit);
+    
+    if (isNaN(ramInBytes) || ramInBytes > maxRam) {
+      set.status = 400;
+      return `ERR: RAM exceeds the maximum allowed value of ${maxRam}G.`;
+    }
+    const coresValue = parseInt(bjson.resources.cores);
+    if (coresValue > maxCores) {
+      set.status = 400;
+      return `ERR: Cores exceed the maximum allowed value of ${maxCores}.`;
+    }
+  
+    // Check if ports are within the specified range
+    const portRange = config["port-range"].split("-");
+    const minPort = parseInt(portRange[0]);
+    const maxPort = parseInt(portRange[1]);
+  
+    const ports = bjson.ports.split(",").map((port:any) => parseInt(port.trim()));
+    for (const port of ports) {
+      if (isNaN(port) || port < minPort || port > maxPort) {
+        set.status = 400;
+        return `ERR: Port ${port} is outside the allowed range of ${minPort}-${maxPort}.`;
+      }
+    }
+  
+    return "TODO";
 })
 
 console.log(`Listening on port ${config.webserver.port} or`),
