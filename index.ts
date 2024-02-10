@@ -32,7 +32,7 @@ if (await ping('http://127.0.0.1:2375/_ping') == "down") {
 //}
 // test if Dockerode NEEDS root first.
 
-const docker = new Docker({ host: '127.0.0.1', port: 2375 });
+const docker = new Docker({protocol:'http',host: '127.0.0.1', port: 2375, version: 'v1.44' });
 
 let netaddr = '[::1]'
 netaddr = require('node:os').hostname()
@@ -50,18 +50,22 @@ server.get("/", () => {
 
 
 server.get("/containers/list", async ({body, set}) => {
-    let containerList:any[] = []
-    docker.listContainers((err: any, containers: Docker.ContainerInfo[]) => {
+   let dl =  await new Promise((resolve, reject) => {
+      let containerList: string[] = [];
+  
+      docker.listContainers((err: any, containers: Docker.ContainerInfo[]) => {
         if (err) {
           console.error(err);
-          return;
+          reject(err);
+        } else {
+          containers.forEach((container: Docker.ContainerInfo) => {
+            containerList.push(`${container.Id}, ${container.Names[0]}, ${container.Status}`);
+          });
+          resolve(containerList);
         }
-      
-        containers.forEach((container: Docker.ContainerInfo) => {
-          containerList[containerList.length] = `${container.Id}, ${container.Names[0]}, ${container.Status}`
-        });
       });
-      return containerList
+    });
+    return dl
 })
 
 server.post("/containers/request", async ({body, set}) => {
