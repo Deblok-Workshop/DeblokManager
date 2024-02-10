@@ -180,17 +180,32 @@ server.post("/containers/create", async ({body, set}) => {
     }
 });
 
-server.post("/containers/kill", async ({body, set}) => {
-    // TODO (assigned: Spark)
-    set.status = 500
-    return "ERR: Not Implemented"
- });
- 
+server.post("/containers/kill", async ({ body, set }) => {
+    const { containerId } = JSON.parse(body);
 
-server.post("/containers/delete", async ({body, set}) => {
-   // TODO (assigned: Spark)
-   set.status = 500
-   return "ERR: Not Implemented"
+    try {
+        const container = docker.getContainer(containerId);
+        await container.kill();
+        return `Container ${containerId} killed successfully.`;
+    } catch (err) {
+        set.status = 500;
+        console.error(err);
+        return err;
+    }
+});
+
+server.post("/containers/delete", async ({ body, set }) => {
+    const { containerId } = JSON.parse(body);
+
+    try {
+        const container = docker.getContainer(containerId);
+        await container.remove();
+        return `Container ${containerId} deleted successfully.`;
+    } catch (err) {
+        set.status = 500;
+        console.error(err);
+        return err;
+    }
 });
 
 
