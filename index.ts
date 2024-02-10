@@ -21,7 +21,7 @@ async function ping(url: string): Promise<string> {
 
 if (await ping('http://localhost:2375') == "down") {
     console.warn('Extra configuration is needed:')
-    console.error(' - Docker needs to be running via TCP (:2375).')
+    console.error(' - The Docker Daemon (dockerd) needs to be running via TCP (:2375).')
     process.exit(2)
 }
 
