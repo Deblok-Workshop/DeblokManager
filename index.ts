@@ -1,3 +1,9 @@
+
+const arch = require('os').arch()
+if (arch != 'x64' && arch != "ia32" && arch != "x86_64") {
+ console.warn('WARN: DeblokManager seems to be only compatible with x86 and x64 architectures. Expect errors!')
+}
+
 import { Elysia, error } from "elysia";
 import { basicAuth } from '@eelkevdbos/elysia-basic-auth';
 import Docker from "dockerode";
@@ -6,6 +12,7 @@ import { networkConnections } from 'systeminformation';
 
 const conffile = Bun.file("config/config.json");
 const config = JSON.parse(await conffile.text());
+
 
 async function ping(url: string): Promise<string> {
     try {
