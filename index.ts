@@ -27,11 +27,23 @@ async function ping(url: string): Promise<string> {
     }
 }
 
-if (require('os').platform() != "linux") {
-    console.error('FATAL: Incompatibility detected!')
-    console.error('        - Due to the heavy use of Docker, DeblokManager can only run on Linux.')
-    process.exit(2)
-}
+if (process.argv.includes('--ignore-linux-check') && require("os").platform() != "linux") {
+    console.warn('WARN: Incompatibility detected!')
+    console.warn(
+        "        - DeblokManager can only run on Linux devices.",
+    );
+    console.warn("          This warning is being ignored due to --ignore-linux-check.")
+  } else
+  if (require("os").platform() != "linux") {
+    console.error("FATAL: Incompatibility detected!");
+    console.error(
+      "        - DeblokManager can only run on Linux devices.",
+    );
+    console.error(
+      "          Pass --ignore-linux-check to ignore this warning",
+    );
+    process.exit(2);
+  }
 
 if (await ping('http://127.0.0.1:2375/_ping') == "down") {
     console.warn('Extra configuration is needed:');
