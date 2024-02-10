@@ -180,8 +180,15 @@ server.post("/containers/create", async ({body, set}) => {
     }
 });
 
+server.post("/containers/kill", async ({body, set}) => {
+    // TODO (assigned: Spark)
+    set.status = 500
+    return "ERR: Not Implemented"
+ });
+ 
+
 server.post("/containers/delete", async ({body, set}) => {
-   // TODO
+   // TODO (assigned: Spark)
    set.status = 500
    return "ERR: Not Implemented"
 });
