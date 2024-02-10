@@ -18,8 +18,8 @@ async function ping(url: string): Promise<string> {
     }
   
   }
-
-if (await ping('http://localhost:2375/_ping') == "down") {
+console.log(await ping('http://127.0.0.1:2375/_ping'))
+if (await ping('http://127.0.0.1:2375/_ping') == "down") {
     console.warn('Extra configuration is needed:')
     console.error(' - The Docker Daemon (dockerd) needs to be running via TCP (:2375).')
     process.exit(2)
