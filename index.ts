@@ -164,6 +164,7 @@ server.post("/containers/create", async ({body, set}) => {
         return result;
     } catch (err) {
         set.status = 500;
+        console.error(err)
         return "ERR: Failed to create container.";
     }
 });
