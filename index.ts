@@ -216,7 +216,7 @@ server.post("/containers/kill", async ({ body, set }) => {
         const imagewl = fs.readFileSync('config/list.txt', 'utf-8').split('\n');
         if (!imagewl.includes(bjson.id)) {
           set.status = 400;
-          return "ERR: This image is not whitelisted.";
+          return "ERR: This image is not whitelisted."; // spark has w rizz
         }
 }
     try {
