@@ -9,7 +9,7 @@ import { basicAuth } from '@eelkevdbos/elysia-basic-auth';
 import Docker from "dockerode";
 import Bun from "bun";
 import fs from 'fs';
-import { networkConnections } from 'systeminformation';
+
 
 const conffile = Bun.file("config/config.json");
 const config = JSON.parse(await conffile.text());
@@ -267,6 +267,7 @@ server.post("/containers/delete", async ({ body, set }) => {
 
 
 function getPorts(): number[] {
+    import { networkConnections } from 'systeminformation';
     const range: number[] = config["port-range"].split('-').map(Number);
     const startPort: number = range[0];
     const endPort: number = range[1];
@@ -286,7 +287,13 @@ function getPorts(): number[] {
 }
 
 server.get("/ports/list", async ({body, set}) => {
+ try {
     return getPorts()
+ } catch (e) {
+  set.status = 500;
+  console.error(e)
+  return ["There was an error retrieving the availiable ports. Are you on x86_64?",e]
+ }
  });
 
 console.log(`Listening on port ${config.webserver.port} or`);
