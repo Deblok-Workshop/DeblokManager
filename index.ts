@@ -28,14 +28,7 @@ async function ping(url: string): Promise<string> {
     }
 }
 
-if (process.argv.includes('--no-whitelist')) {
-    console.warn('WARN: ####################################')
-    console.warn('WARN: # YOU HAVE DISABLED THE WHITELIST! #')
-    console.warn('WARN: ####################################')
-    console.log()
-    console.warn('WARN: Disabling the whitelist allows ANYONE to create/delete/kill ANY Docker container!')
-    console.warn('WARN: This has MAJOR security implications, CTRL+C NOW if this was unintentional.')
-}
+
 
 if (process.argv.includes('--ignore-linux-check') && require("os").platform() != "linux") {
     console.warn('WARN: Incompatibility detected!')
@@ -301,5 +294,14 @@ console.log(` │ 0.0.0.0:${config.webserver.port}`);
 console.log(` │ 127.0.0.1:${config.webserver.port}`);
 console.log(` │ ${netaddr}:${config.webserver.port}`);
 console.log(` └─────────────────────────>`);
+if (process.argv.includes('--no-whitelist')) {
+    console.log()
+    console.warn('WARN: ####################################')
+    console.warn('WARN: # YOU HAVE DISABLED THE WHITELIST! #')
+    console.warn('WARN: ####################################')
+    console.log()
+    console.warn('WARN: Disabling the whitelist allows ANYONE to create/delete/kill ANY Docker container!')
+    console.warn('WARN: This has MAJOR security implications, CTRL+C NOW if this was unintentional.')
+}
 server.listen(config.webserver);
 
