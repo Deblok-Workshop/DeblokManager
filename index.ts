@@ -258,16 +258,16 @@ server.post("/containers/delete", async ({ body, set }) => {
     }
 });
 
-
+import { networkConnections } from 'systeminformation';
 function getPorts(): number[] {
-    import { networkConnections } from 'systeminformation';
+    
     const range: number[] = config["port-range"].split('-').map(Number);
     const startPort: number = range[0];
     const endPort: number = range[1];
 
     const usedPorts: number[] = Object.values(networkConnections())
-        .filter(connection => connection.protocol === 'TCP' || connection.protocol === 'UDP')
-        .map(connection => connection.localport);
+        .filter((connection:any) => connection.protocol === 'TCP' || connection.protocol === 'UDP')
+        .map((connection:any) => connection.localport);
 
     const availablePorts: number[] = [];
     for (let port = startPort; port <= endPort; port++) {
