@@ -1,2 +1,8 @@
-lscr.io/linuxserver/firefox
-lscr.io/linuxserver/chromium
+ubuntu
+debian
+ghcr.io/deblok-workshop/deblokdocker/debian-base:main
+ghcr.io/deblok-workshop/deblokdocker/alpine-base:main
+ghcr.io/deblok-workshop/deblokdocker/fedora-base:main
+ghcr.io/deblok-workshop/deblokdocker/ubuntu-base:main
+ghcr.io/deblok-workshop/deblokdocker/debian-xfce:main
+ghcr.io/deblok-workshop/deblokdocker/ubuntu-base:main
