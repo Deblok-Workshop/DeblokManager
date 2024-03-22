@@ -1,0 +1,7 @@
+ubuntu
+debian
+ghcr.io/deblok-workshop/deblokdocker/debian-base:latest
+ghcr.io/deblok-workshop/deblokdocker/alpine-base:latest
+ghcr.io/deblok-workshop/deblokdocker/fedora-base:latest
+ghcr.io/deblok-workshop/deblokdocker/debian-xfce:latest
+ghcr.io/deblok-workshop/deblokdocker/ubuntu-base:latest

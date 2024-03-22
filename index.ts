@@ -133,7 +133,7 @@ server.post("/containers/create", async ({body, set}) => {
         const imagewl = fs.readFileSync('config/list.txt', 'utf-8').split('\n');
         if (!imagewl.includes(bjson.id)) {
           set.status = 400;
-          return "ERR: This image is not whitelisted.";
+          return `ERR: This image (${bjson.id}) is not whitelisted.`;
         }
 }
     try {
@@ -209,7 +209,7 @@ server.post("/containers/kill", async ({ body, set }) => {
         const imagewl = fs.readFileSync('config/list.txt', 'utf-8').split('\n');
         if (!imagewl.includes(bjson.id)) {
           set.status = 400;
-          return "ERR: This image is not whitelisted."; // spark has w rizz
+          return `ERR: This image (${bjson.id}) is not whitelisted.`; // spark has w rizz
         }
 }
     try {
@@ -237,7 +237,7 @@ server.post("/containers/delete", async ({ body, set }) => {
         const imagewl = fs.readFileSync('config/list.txt', 'utf-8').split('\n');
         if (!imagewl.includes(bjson.id)) {
           set.status = 400;
-          return "ERR: This image is not whitelisted.";
+          return `ERR: This image (${bjson.id}) is not whitelisted.`;
         }
 }
     try {
