@@ -129,6 +129,15 @@ function readableToBytes(ramString: string): number {
 server.post("/containers/create", async ({body, set}) => {
     const b:any=body // the body variable is actually a string, this is here to fix a ts error
     var bjson:any={"name":"","image":"","resources":{"ram":"","cores":""},"ports":""} // boilerplate to not piss off TypeScript.
+
+    try {
+        bjson = JSON.parse(b);
+    } catch (e) {
+        console.error(e);
+        console.error(b)
+        set.status = 400;
+        return `ERR: ${e}`;
+    }
     if (!process.argv.includes('--no-whitelist')) {
         const imagewl = fs.readFileSync('config/list.txt', 'utf-8').split('\n');
         if (!imagewl.includes(bjson.image)) {
@@ -136,14 +145,6 @@ server.post("/containers/create", async ({body, set}) => {
           return `ERR: This image (${bjson.image}) is not whitelisted.`;
         }
 }
-    try {
-        bjson = JSON.parse(b);
-    } catch (e) {
-        console.error(e);
-        set.status = 400;
-        return "ERR: Bad JSON";
-    }
-
     // Check if required fields are present
     if (!bjson.name || bjson.name == "" || !bjson.image || bjson.image == "") {
         set.status = 400;
