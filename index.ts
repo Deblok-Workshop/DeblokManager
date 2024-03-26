@@ -126,15 +126,16 @@ function readableToBytes(ramString: string): number {
     }
 }
 
-server.post("/containers/create", async ({body, set}) => {
-    const b:any=body // the body variable is actually a string, this is here to fix a ts error
+server.post("/containers/create", async ({ body, set }) => {
+    let b:any=body // the body variable is actually a string, this is here to fix a ts error
     var bjson:any={"name":"","image":"","resources":{"ram":"","cores":""},"ports":""} // boilerplate to not piss off TypeScript.
-
+    
     try {
+        
         bjson = JSON.parse(b);
     } catch (e) {
         console.error(e);
-        console.error(b)
+        console.error(body)
         set.status = 400;
         return `ERR: ${e}`;
     }
@@ -162,37 +163,51 @@ server.post("/containers/create", async ({body, set}) => {
         set.status = 400;
         return `ERR: vCores exceed the maximum allowed value of ${config.resources.maxcores}.`;
     }
-    // Set up container creation options
+    interface PortBinding {
+        HostPort: string;
+      }
+
+      interface PortBindings {
+        [key: string]: PortBinding[];
+      }
     const containerOptions = {
         name: bjson.name,
         Image: bjson.image,
         HostConfig: {
-            Memory: readableToBytes(bjson.resources.ram), // Set memory limit
-            NanoCPUs: Number(bjson.resources.cores * 1e9), // Set CPU limit
-            PortBindings: {}, // Set port bindings
+          Memory: readableToBytes(bjson.resources.ram), // Set memory limit
+          NanoCPUs: Number(bjson.resources.cores * 1e9), // Set CPU limit
+          PortBindings: {} as PortBindings, // Set port bindings
         }
-    };
+      };
+      
+      // Update the type of PortBindings when setting up port bindings
+      if (bjson.ports && bjson.ports !== "") {
+        const portPairs = bjson.ports.split(",").map((portPair: any) => portPair.trim());
+      
+        portPairs.forEach((portPair: string) => {
+          const [external, internal] = portPair.split(":").map((port: string) => port.trim());
+      
+          if (!containerOptions.HostConfig.PortBindings[`${internal}/tcp`]) {
+            containerOptions.HostConfig.PortBindings[`${internal}/tcp`] = [];
+          }
+      
+          containerOptions.HostConfig.PortBindings[`${internal}/tcp`].push({ HostPort: external });
+        });
+      }
+    
+    
 
+    // Set up port bindings
     if (bjson.ports && bjson.ports !== "") {
         const portPairs = bjson.ports.split(",").map((portPair: any) => portPair.trim());
-        const portRange = config["port-range"].split("-").map((port: string) => parseInt(port.trim()));
-        const minPort = portRange[0];
-        const maxPort = portRange[1];
-        const invalidPorts = portPairs
-            .map((portPair: string) => parseInt(portPair.split(":")[0].trim()))
-            .filter((port: number) => port < minPort || port > maxPort);
-    
-        if (invalidPorts.length > 0) {
-            set.status = 400;
-            return `ERR: External port(s) ${invalidPorts.join(', ')} are outside the allowed range (${minPort} - ${maxPort}).`;
-        }
     
         portPairs.forEach((portPair: string) => {
             const [external, internal] = portPair.split(":").map((port: string) => port.trim());
-            (containerOptions.HostConfig.PortBindings as Record<string, any>)[`${external}/tcp`] = [{ HostPort: internal }];
+    
+            containerOptions.HostConfig.PortBindings[`${internal}/tcp`] = [{ HostPort: external }];
         });
     }
-
+    
     try {
         const result = await createContainer(containerOptions);
         return result;
