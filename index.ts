@@ -131,9 +131,9 @@ server.post("/containers/create", async ({body, set}) => {
     var bjson:any={"name":"","image":"","resources":{"ram":"","cores":""},"ports":""} // boilerplate to not piss off TypeScript.
     if (!process.argv.includes('--no-whitelist')) {
         const imagewl = fs.readFileSync('config/list.txt', 'utf-8').split('\n');
-        if (!imagewl.includes(bjson.id)) {
+        if (!imagewl.includes(bjson.image)) {
           set.status = 400;
-          return `ERR: This image (${bjson.id}) is not whitelisted.`;
+          return `ERR: This image (${bjson.image}) is not whitelisted.`;
         }
 }
     try {
