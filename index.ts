@@ -93,7 +93,7 @@ async function createContainer(containerOptions:any) {
 
     try {
         containerOptions.HostConfig = { AutoRemove: true, ...containerOptions.HostConfig };
-        containerOptions.Cmd = containerOptions.Cmd || ['sleep','7d']; // sleep for a week, which is gonna be the max time a nd container can run for. 
+        // containerOptions.Cmd = containerOptions.Cmd || ['sleep','7d']; // sleep for a week, which is gonna be the max time a nd container can run for. 
         const container = await docker.createContainer(containerOptions);
         
         await container.start();
