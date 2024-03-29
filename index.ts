@@ -290,7 +290,7 @@ server.post("/containers/keepalive", async ({ body, set }) => {
         return "ERR: Bad JSON";
     }
     if (sessionKeepalive[bjson.id]) {
-        sessionKeepalive[bjson.id] = Date.now() + 300000
+        addToKeepalive(bjson.id,300000)
         return "Updated."
     } else {
         set.status = 400
@@ -346,10 +346,18 @@ if (process.argv.includes('--no-whitelist')) {
 }
 
 function removeKeepalive(id:string) {
-    let idx = sessionKeepalive.indexOf(id)
-    if (idx > -1) { 
-        sessionKeepalive.splice(idx, 1); 
-      }
+    for (let i = 0;i < sessionKeepalive.length;i++) {
+        if (sessionKeepalive[i][0] == id) {
+            sessionKeepalive.splice(i,1)
+        }
+    }
+}
+function addToKeepalive(id:string,msAdded:number) {
+    for (let i = 0;i < sessionKeepalive.length;i++) {
+        if (sessionKeepalive[i][0] == id) {
+            sessionKeepalive[i][1] = sessionKeepalive[i][1] + msAdded
+        }
+    }
 }
 
 setInterval(async ()=>{
@@ -357,9 +365,11 @@ setInterval(async ()=>{
     for (let i = 0;i < sessionKeepalive.length;i++) {
         console.log(i,sessionKeepalive[i])
         if (Date.now() > sessionKeepalive[i][1]) {
+            
             const container = docker.getContainer(sessionKeepalive[i][0]);
+            removeKeepalive(sessionKeepalive[i][0])
             await container.kill();
-           
+            
         }
     }
 },2000)
