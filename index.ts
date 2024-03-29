@@ -211,7 +211,7 @@ server.post("/containers/create", async ({ body, set }) => {
     try {
         
         const result:any = await createContainer(containerOptions);
-        sessionKeepalive[result] = Date.now() + 300000
+        sessionKeepalive[result] = Date.now() + 30000
         return result;
     } catch (err) {
         set.status = 500;
