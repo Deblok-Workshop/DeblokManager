@@ -304,11 +304,35 @@ server.get("/ports/list", async ({body, set}) => {
  }
  });
 
+async function proxy(params:any,method:string,body:any) {
+    if (method == "GET") {
+        let res = await fetch(`http://localhost:${params["port"]}/${params["*"]}`,{"method":method})
+        return [await res.text(),res.headers.get("Content-Type")]
+    } else {
+        let res = await fetch(`http://localhost:${params["port"]}/${params["*"]}`,{"method":method,"body":body})
+        return await res.text()
+    }
+ }
 
-server.all("/port/:port/*", async ({ params, set }) => {
+server.get("/port/:port/*", async ({ params, set }) => {
+
     const range: number[] = config["port-range"].split('-').map(Number);
     if (range.includes(Number(params["port"]))) {
+        let res:any = await proxy(params,"GET","")
+        set.headers = {"Content-Type":res[1]}
+        return res[0]
+    } else {
+        set.status = 400
+        return "ERR: Port is not within accepted range."
+    }
+});
+server.post("/port/:port/*", async ({ params, body, set }) => {
 
+    const range: number[] = config["port-range"].split('-').map(Number);
+    if (range.includes(Number(params["port"]))) {
+        let res:any = await proxy(params,"GET","")
+        set.headers = {"Content-Type":res[1]}
+        return res[0]
     } else {
         set.status = 400
         return "ERR: Port is not within accepted range."
