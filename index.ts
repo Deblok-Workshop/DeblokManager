@@ -13,7 +13,7 @@ import fs from 'fs';
 
 const conffile = Bun.file("config/config.json");
 const config = JSON.parse(await conffile.text());
-
+let sessionKeepalive:any[] = []
 
 async function ping(url: string): Promise<string> {
     try {
@@ -97,7 +97,7 @@ async function createContainer(containerOptions:any) {
         const container = await docker.createContainer(containerOptions);
         
         await container.start();
-        return `Container ${container.id} created and started successfully.`;
+        return `${container.id}`;
     } catch (err) {
         console.error(err);
         throw err;
@@ -209,7 +209,9 @@ server.post("/containers/create", async ({ body, set }) => {
     }
     
     try {
-        const result = await createContainer(containerOptions);
+        
+        const result:any = await createContainer(containerOptions);
+        sessionKeepalive[result] = Date.now() + 300000
         return result;
     } catch (err) {
         set.status = 500;
@@ -238,7 +240,8 @@ server.post("/containers/kill", async ({ body, set }) => {
     try {
         const container = docker.getContainer(bjson.id);
         await container.kill();
-        return `Container ${bjson.id} killed successfully.`;
+        sessionKeepalive[bjson.id] = undefined
+        return `${bjson.id}`;
     } catch (err) {
         set.status = 500;
         console.error(err);
@@ -266,13 +269,33 @@ server.post("/containers/delete", async ({ body, set }) => {
     try {
         const container = docker.getContainer(bjson.id);
         await container.remove();
-        return `Container ${bjson.id} deleted successfully.`;
+        return `${bjson.id}`;
     } catch (err) {
         set.status = 500;
         console.error(err);
         return err;
     }
 });
+
+server.post("/containers/keepalive", async ({ body, set }) => {
+    const b:any=body // the body variable is actually a string, this is here to fix a ts error
+    var bjson:any={id:""} // boilerplate to not piss off TypeScript.
+    try {
+        bjson = JSON.parse(b);
+    } catch (e) {
+        console.error(e);
+        set.status = 400;
+        return "ERR: Bad JSON";
+    }
+    if (sessionKeepalive[bjson.id]) {
+        sessionKeepalive[bjson.id] = Date.now() + 300000
+        return "Updated."
+    } else {
+        set.status = 400
+        return "ERR: Keepalive does not exist."
+    }
+})
+
 import { networkConnections } from 'systeminformation';
 function getPorts(): number[] {
     
