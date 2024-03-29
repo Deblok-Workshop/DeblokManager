@@ -211,7 +211,8 @@ server.post("/containers/create", async ({ body, set }) => {
     try {
         
         const result:any = await createContainer(containerOptions);
-        sessionKeepalive[result] = Date.now() + 30000
+        console.log(result)
+        sessionKeepalive.push([result,Date.now() + 30000])
         return result;
     } catch (err) {
         set.status = 500;
@@ -240,7 +241,7 @@ server.post("/containers/kill", async ({ body, set }) => {
     try {
         const container = docker.getContainer(bjson.id);
         await container.kill();
-        sessionKeepalive[bjson.id] = undefined
+removeKeepalive(bjson.id)
         return `${bjson.id}`;
     } catch (err) {
         set.status = 500;
@@ -269,6 +270,7 @@ server.post("/containers/delete", async ({ body, set }) => {
     try {
         const container = docker.getContainer(bjson.id);
         await container.remove();
+removeKeepalive(bjson.id)
         return `${bjson.id}`;
     } catch (err) {
         set.status = 500;
@@ -342,14 +344,24 @@ if (process.argv.includes('--no-whitelist')) {
     console.warn('WARN: Disabling the whitelist allows ANYONE to create/delete/kill ANY Docker container!')
     console.warn('WARN: This has MAJOR security implications, CTRL+C NOW if this was unintentional.')
 }
-server.listen(config.webserver);
+
+function removeKeepalive(id:string) {
+    let idx = sessionKeepalive.indexOf(id)
+    if (idx > -1) { 
+        sessionKeepalive.splice(idx, 1); 
+      }
+}
 
 setInterval(async ()=>{
-    for (let i = 0;i > sessionKeepalive.length;i++) {
-        if (Date.now() > sessionKeepalive[i]) {
-            const container = docker.getContainer(sessionKeepalive[i]);
+    console.log(sessionKeepalive.length)
+    for (let i = 0;i < sessionKeepalive.length;i++) {
+        console.log(i,sessionKeepalive[i])
+        if (Date.now() > sessionKeepalive[i][1]) {
+            const container = docker.getContainer(sessionKeepalive[i][0]);
             await container.kill();
-            sessionKeepalive[i] = undefined
+           
         }
     }
 },2000)
+server.listen(config.webserver);
+
