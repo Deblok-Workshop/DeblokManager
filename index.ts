@@ -304,6 +304,17 @@ server.get("/ports/list", async ({body, set}) => {
  }
  });
 
+
+server.all("/port/:port/*", async ({ params, set }) => {
+    const range: number[] = config["port-range"].split('-').map(Number);
+    if (range.includes(Number(params["port"]))) {
+
+    } else {
+        set.status = 400
+        return "ERR: Port is not within accepted range."
+    }
+});
+
 console.log(`Listening on port ${config.webserver.port} or`);
 console.log(` │ 0.0.0.0:${config.webserver.port}`);
 console.log(` │ 127.0.0.1:${config.webserver.port}`);
