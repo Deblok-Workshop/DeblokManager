@@ -4,7 +4,7 @@ if (arch != 'x64' && arch != "ia32" && arch != "x86_64") {
  console.warn('WARN: DeblokManager seems to be only compatible with x86 and x64 architectures. Expect errors!')
 }
 
-import { Elysia, error } from "elysia";
+import { Elysia, error,t } from "elysia";
 import { basicAuth } from '@eelkevdbos/elysia-basic-auth';
 import Docker from "dockerode";
 import Bun from "bun";
@@ -304,40 +304,6 @@ server.get("/ports/list", async ({body, set}) => {
  }
  });
 
-async function proxy(params:any,method:string,body:any) {
-    if (method == "GET") {
-        let res = await fetch(`http://localhost:${params["port"]}/${params["*"]}`,{"method":method})
-        return [await res.text(),res.headers.get("Content-Type")]
-    } else {
-        let res = await fetch(`http://localhost:${params["port"]}/${params["*"]}`,{"method":method,"body":body})
-        return await res.text()
-    }
- }
-
-server.get("/port/:port/*", async ({ params, set }) => {
-
-    const range: number[] = config["port-range"].split('-').map(Number);
-    if (range.includes(Number(params["port"]))) {
-        let res:any = await proxy(params,"GET","")
-        set.headers = {"Content-Type":res[1]}
-        return res[0]
-    } else {
-        set.status = 400
-        return "ERR: Port is not within accepted range."
-    }
-});
-server.post("/port/:port/*", async ({ params, body, set }) => {
-
-    const range: number[] = config["port-range"].split('-').map(Number);
-    if (range.includes(Number(params["port"]))) {
-        let res:any = await proxy(params,"GET","")
-        set.headers = {"Content-Type":res[1]}
-        return res[0]
-    } else {
-        set.status = 400
-        return "ERR: Port is not within accepted range."
-    }
-});
 
 console.log(`Listening on port ${config.webserver.port} or`);
 console.log(` │ 0.0.0.0:${config.webserver.port}`);
