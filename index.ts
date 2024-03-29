@@ -361,9 +361,7 @@ function addToKeepalive(id:string,msAdded:number) {
 }
 
 setInterval(async ()=>{
-    console.log(sessionKeepalive.length)
     for (let i = 0;i < sessionKeepalive.length;i++) {
-        console.log(i,sessionKeepalive[i])
         if (Date.now() > sessionKeepalive[i][1]) {
             
             const container = docker.getContainer(sessionKeepalive[i][0]);
