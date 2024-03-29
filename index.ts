@@ -344,3 +344,12 @@ if (process.argv.includes('--no-whitelist')) {
 }
 server.listen(config.webserver);
 
+setInterval(async ()=>{
+    for (let i = 0;i > sessionKeepalive.length;i++) {
+        if (Date.now() > sessionKeepalive[i]) {
+            const container = docker.getContainer(sessionKeepalive[i]);
+            await container.kill();
+            sessionKeepalive[i] = undefined
+        }
+    }
+},2000)
