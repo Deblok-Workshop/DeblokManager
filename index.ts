@@ -14,6 +14,9 @@ import fs from 'fs';
 const conffile = Bun.file("config/config.json");
 const config = JSON.parse(await conffile.text());
 let sessionKeepalive:any[] = []
+let managedContainers:string[] = []
+
+
 
 async function ping(url: string): Promise<string> {
     try {
@@ -213,6 +216,7 @@ server.post("/containers/create", async ({ body, set }) => {
         const result:any = await createContainer(containerOptions);
         console.log(result)
         sessionKeepalive.push([result,Date.now() + config.policy.keepalive.initial * 1000])
+        managedContainers.push(result)
         return result;
     } catch (err) {
         set.status = 500;
@@ -224,7 +228,10 @@ server.post("/containers/create", async ({ body, set }) => {
 server.post("/containers/kill", async ({ body, set }) => {
     const b:any=body // the body variable is actually a string, this is here to fix a ts error
     var bjson:any={id:""} // boilerplate to not piss off TypeScript.
-
+    if (managedContainers.indexOf(bjson.id) == -1) {
+        set.status = 400;
+        return "ERR: DeblokManager doesn't manage this container.";
+    }
     try {
         bjson = JSON.parse(b);
     } catch (e) {
@@ -235,6 +242,8 @@ server.post("/containers/kill", async ({ body, set }) => {
     try {
         const container = docker.getContainer(bjson.id);
         await container.kill();
+        // managedContainers.splice(managedContainers.indexOf(bjson.id),1)
+        
 removeKeepalive(bjson.id)
         return `${bjson.id}`;
     } catch (err) {
@@ -247,7 +256,10 @@ removeKeepalive(bjson.id)
 server.post("/containers/delete", async ({ body, set }) => {
     const b:any=body // the body variable is actually a string, this is here to fix a ts error
     var bjson:any={id:""} // boilerplate to not piss off TypeScript.
-
+    if (managedContainers.indexOf(bjson.id) == -1) {
+        set.status = 400;
+        return "ERR: DeblokManager doesn't manage this container.";
+    }
     try {
         bjson = JSON.parse(b);
     } catch (e) {
@@ -258,6 +270,7 @@ server.post("/containers/delete", async ({ body, set }) => {
     try {
         const container = docker.getContainer(bjson.id);
         await container.remove();
+        managedContainers.splice(managedContainers.indexOf(bjson.id),1)
 removeKeepalive(bjson.id)
         return `${bjson.id}`;
     } catch (err) {
@@ -270,7 +283,10 @@ removeKeepalive(bjson.id)
 server.post("/containers/pause", async ({ body, set }) => {
     const b:any=body // the body variable is actually a string, this is here to fix a ts error
     var bjson:any={id:""} // boilerplate to not piss off TypeScript.
-
+    if (managedContainers.indexOf(bjson.id) == -1) {
+        set.status = 400;
+        return "ERR: DeblokManager doesn't manage this container.";
+    }
     try {
         bjson = JSON.parse(b);
     } catch (e) {
@@ -294,7 +310,10 @@ server.post("/containers/pause", async ({ body, set }) => {
 server.post("/containers/unpause", async ({ body, set }) => {
     const b:any=body // the body variable is actually a string, this is here to fix a ts error
     var bjson:any={id:""} // boilerplate to not piss off TypeScript.
-
+    if (managedContainers.indexOf(bjson.id) == -1) {
+        set.status = 400;
+        return "ERR: DeblokManager doesn't manage this container.";
+    }
     try {
         bjson = JSON.parse(b);
     } catch (e) {
@@ -317,6 +336,10 @@ server.post("/containers/unpause", async ({ body, set }) => {
 server.post("/containers/keepalive", async ({ body, set }) => {
     const b:any=body // the body variable is actually a string, this is here to fix a ts error
     var bjson:any={id:""} // boilerplate to not piss off TypeScript.
+    if (managedContainers.indexOf(bjson.id) == -1) {
+        set.status = 400;
+        return "ERR: DeblokManager doesn't manage this container.";
+    }
     try {
         bjson = JSON.parse(b);
     } catch (e) {
