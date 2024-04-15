@@ -153,15 +153,15 @@ server.post("/containers/create", async ({ body, set }) => {
     }
 
 
-    if (readableToBytes(bjson.resources.ram) > readableToBytes(config.resources.maxram)) {
+    if (readableToBytes(bjson.resources.ram) > readableToBytes(config.policy.resources.maxram)) {
         set.status = 400;
-        return `ERR: RAM exceeds the maximum allowed value of ${config.resources.maxram}.`;
+        return `ERR: RAM exceeds the maximum allowed value of ${config.policy.resources.maxram}.`;
     }
 
 
-    if (parseFloat(bjson.resources.cores) > parseFloat(config.resources.maxcores)) {
+    if (parseFloat(bjson.resources.cores) > parseFloat(config.policy.resources.maxcores)) {
         set.status = 400;
-        return `ERR: vCores exceed the maximum allowed value of ${config.resources.maxcores}.`;
+        return `ERR: vCores exceed the maximum allowed value of ${config.policy.resources.maxcores}.`;
     }
     interface PortBinding {
         HostPort: string;

@@ -2,8 +2,15 @@
     "port-range":"59000-59100",
     "webserver": {"port":"8100"},
     "authentication": {"username":"admin","password":"admin"},
-    "resources":{
-        "maxram":"4G",
-        "maxcores":"2"
+    "policy": {
+        "resources":{
+           "maxram":"4G",
+          "maxcores":"2"
+        },
+        "keepalive": {
+          "increment": "300",
+            "initial": "60"
+        }
     }
+    
 }
