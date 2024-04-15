@@ -212,7 +212,7 @@ server.post("/containers/create", async ({ body, set }) => {
         
         const result:any = await createContainer(containerOptions);
         console.log(result)
-        sessionKeepalive.push([result,Date.now() + 30000])
+        sessionKeepalive.push([result,Date.now() + 60000])
         return result;
     } catch (err) {
         set.status = 500;
@@ -267,6 +267,53 @@ removeKeepalive(bjson.id)
     }
 });
 
+server.post("/containers/pause", async ({ body, set }) => {
+    const b:any=body // the body variable is actually a string, this is here to fix a ts error
+    var bjson:any={id:""} // boilerplate to not piss off TypeScript.
+
+    try {
+        bjson = JSON.parse(b);
+    } catch (e) {
+        console.error(e);
+        set.status = 400;
+        return "ERR: Bad JSON";
+    }
+    try {
+        const container = docker.getContainer(bjson.id);
+        await container.pause();
+        addToKeepalive(bjson.id,(10*60)*1000) // 10 mins
+        return `${bjson.id}`;
+    } catch (err) {
+        set.status = 500;
+        console.error(err);
+        return err;
+    }
+});
+
+
+server.post("/containers/unpause", async ({ body, set }) => {
+    const b:any=body // the body variable is actually a string, this is here to fix a ts error
+    var bjson:any={id:""} // boilerplate to not piss off TypeScript.
+
+    try {
+        bjson = JSON.parse(b);
+    } catch (e) {
+        console.error(e);
+        set.status = 400;
+        return "ERR: Bad JSON";
+    }
+    try {
+        const container = docker.getContainer(bjson.id);
+        await container.unpause();
+        addToKeepalive(bjson.id,60000) // 1 minute
+        return `${bjson.id}`;
+    } catch (err) {
+        set.status = 500;
+        console.error(err);
+        return err;
+    }
+});
+
 server.post("/containers/keepalive", async ({ body, set }) => {
     const b:any=body // the body variable is actually a string, this is here to fix a ts error
     var bjson:any={id:""} // boilerplate to not piss off TypeScript.
@@ -278,7 +325,7 @@ server.post("/containers/keepalive", async ({ body, set }) => {
         return "ERR: Bad JSON";
     }
     if (sessionKeepalive[bjson.id]) {
-        addToKeepalive(bjson.id,300000)
+        addToKeepalive(bjson.id,600000) // 5 mins
         return "Updated."
     } else {
         set.status = 400
