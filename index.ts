@@ -174,7 +174,7 @@ server.post("/containers/create", async ({ body, set }) => {
         [key: string]: PortBinding[];
       }
     const containerOptions = {
-        name: bjson.name,
+        name: bjson.name + "_" + String(crypto.randomUUID).replaceAll("-",""),
         Image: bjson.image,
         HostConfig: {
           Memory: readableToBytes(bjson.resources.ram), // Set memory limit
