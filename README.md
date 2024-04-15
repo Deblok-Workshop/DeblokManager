@@ -3,6 +3,10 @@ To setup (Linux only):
 
 ```bash
 bun i
+# if cpu-features fails
+bun i cpu-featues
+# if cpu-features installation keeps on failing, install NodeJS.
+# if it STILL keeps failing it means your device is incompatible.
 sudo bash ./setup_dockertcp.sh # to set up Docker over TCP.
 ```
 
