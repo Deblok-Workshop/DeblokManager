@@ -8,8 +8,8 @@
           "maxcores":"2"
         },
         "keepalive": {
-          "increment": "300",
-            "initial": "60"
+          "increment": 300,
+            "initial": 60
         }
     }
     

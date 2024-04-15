@@ -212,7 +212,7 @@ server.post("/containers/create", async ({ body, set }) => {
         
         const result:any = await createContainer(containerOptions);
         console.log(result)
-        sessionKeepalive.push([result,Date.now() + 60000])
+        sessionKeepalive.push([result,Date.now() + config.policy.keepalive.initial * 1000])
         return result;
     } catch (err) {
         set.status = 500;
@@ -281,7 +281,7 @@ server.post("/containers/pause", async ({ body, set }) => {
     try {
         const container = docker.getContainer(bjson.id);
         await container.pause();
-        addToKeepalive(bjson.id,(10*60)*1000) // 10 mins
+        addToKeepalive(bjson.id,config.policy.keepalive.increment * 1000)
         return `${bjson.id}`;
     } catch (err) {
         set.status = 500;
@@ -305,7 +305,7 @@ server.post("/containers/unpause", async ({ body, set }) => {
     try {
         const container = docker.getContainer(bjson.id);
         await container.unpause();
-        addToKeepalive(bjson.id,60000) // 1 minute
+        addToKeepalive(bjson.id,config.policy.keepalive.initial * 1000) // 1 minute
         return `${bjson.id}`;
     } catch (err) {
         set.status = 500;
@@ -325,7 +325,7 @@ server.post("/containers/keepalive", async ({ body, set }) => {
         return "ERR: Bad JSON";
     }
     if (sessionKeepalive[bjson.id]) {
-        addToKeepalive(bjson.id,600000) // 5 mins
+        addToKeepalive(bjson.id,config.policy.keepalive.initial * 10000) // 5 mins
         return "Updated."
     } else {
         set.status = 400
