@@ -224,13 +224,7 @@ server.post("/containers/create", async ({ body, set }) => {
 server.post("/containers/kill", async ({ body, set }) => {
     const b:any=body // the body variable is actually a string, this is here to fix a ts error
     var bjson:any={id:""} // boilerplate to not piss off TypeScript.
-    if (!process.argv.includes('--no-whitelist')) {
-        const imagewl = fs.readFileSync('config/list.txt', 'utf-8').split('\n');
-        if (!imagewl.includes(bjson.id)) {
-          set.status = 400;
-          return `ERR: This image (${bjson.id}) is not whitelisted.`; // spark has w rizz
-        }
-}
+
     try {
         bjson = JSON.parse(b);
     } catch (e) {
@@ -253,13 +247,7 @@ removeKeepalive(bjson.id)
 server.post("/containers/delete", async ({ body, set }) => {
     const b:any=body // the body variable is actually a string, this is here to fix a ts error
     var bjson:any={id:""} // boilerplate to not piss off TypeScript.
-    if (!process.argv.includes('--no-whitelist')) {
-        const imagewl = fs.readFileSync('config/list.txt', 'utf-8').split('\n');
-        if (!imagewl.includes(bjson.id)) {
-          set.status = 400;
-          return `ERR: This image (${bjson.id}) is not whitelisted.`;
-        }
-}
+
     try {
         bjson = JSON.parse(b);
     } catch (e) {
