@@ -428,7 +428,7 @@ setInterval(async ()=>{
             const container = docker.getContainer(sessionKeepalive[i][0]);
             removeKeepalive(sessionKeepalive[i][0])
             await container.kill();
-            await container.remove();
+            // await container.remove();
             
         }
     }
