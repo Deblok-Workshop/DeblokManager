@@ -231,16 +231,17 @@ server.post("/containers/create", async ({ body, set }) => {
 server.post("/containers/kill", async ({ body, set }) => {
     const b:any=body // the body variable is actually a string, this is here to fix a ts error
     var bjson:any={id:""} // boilerplate to not piss off TypeScript.
-    if (managedContainers.indexOf(bjson.id) == -1) {
-        set.status = 400;
-        return "ERR: DeblokManager doesn't manage this container.";
-    }
+   
     try {
         bjson = JSON.parse(b);
     } catch (e) {
         console.error(e);
         set.status = 400;
         return "ERR: Bad JSON";
+    }
+    if (managedContainers.indexOf(bjson.id) == -1) {
+        set.status = 400;
+        return "ERR: DeblokManager doesn't manage this container.";
     }
     try {
         const container = docker.getContainer(bjson.id);
@@ -259,16 +260,17 @@ removeKeepalive(bjson.id)
 server.post("/containers/delete", async ({ body, set }) => {
     const b:any=body // the body variable is actually a string, this is here to fix a ts error
     var bjson:any={id:""} // boilerplate to not piss off TypeScript.
-    if (managedContainers.indexOf(bjson.id) == -1) {
-        set.status = 400;
-        return "ERR: DeblokManager doesn't manage this container.";
-    }
+    
     try {
         bjson = JSON.parse(b);
     } catch (e) {
         console.error(e);
         set.status = 400;
         return "ERR: Bad JSON";
+    }
+    if (managedContainers.indexOf(bjson.id) == -1) {
+        set.status = 400;
+        return "ERR: DeblokManager doesn't manage this container.";
     }
     try {
         const container = docker.getContainer(bjson.id);
@@ -286,16 +288,17 @@ removeKeepalive(bjson.id)
 server.post("/containers/pause", async ({ body, set }) => {
     const b:any=body // the body variable is actually a string, this is here to fix a ts error
     var bjson:any={id:""} // boilerplate to not piss off TypeScript.
-    if (managedContainers.indexOf(bjson.id) == -1) {
-        set.status = 400;
-        return "ERR: DeblokManager doesn't manage this container.";
-    }
+    
     try {
         bjson = JSON.parse(b);
     } catch (e) {
         console.error(e);
         set.status = 400;
         return "ERR: Bad JSON";
+    }
+    if (managedContainers.indexOf(bjson.id) == -1) {
+        set.status = 400;
+        return "ERR: DeblokManager doesn't manage this container.";
     }
     try {
         const container = docker.getContainer(bjson.id);
@@ -313,16 +316,17 @@ server.post("/containers/pause", async ({ body, set }) => {
 server.post("/containers/unpause", async ({ body, set }) => {
     const b:any=body // the body variable is actually a string, this is here to fix a ts error
     var bjson:any={id:""} // boilerplate to not piss off TypeScript.
-    if (managedContainers.indexOf(bjson.id) == -1) {
-        set.status = 400;
-        return "ERR: DeblokManager doesn't manage this container.";
-    }
+   
     try {
         bjson = JSON.parse(b);
     } catch (e) {
         console.error(e);
         set.status = 400;
         return "ERR: Bad JSON";
+    }
+    if (managedContainers.indexOf(bjson.id) == -1) {
+        set.status = 400;
+        return "ERR: DeblokManager doesn't manage this container.";
     }
     try {
         const container = docker.getContainer(bjson.id);
@@ -339,16 +343,17 @@ server.post("/containers/unpause", async ({ body, set }) => {
 server.post("/containers/keepalive", async ({ body, set }) => {
     const b:any=body // the body variable is actually a string, this is here to fix a ts error
     var bjson:any={id:""} // boilerplate to not piss off TypeScript.
-    if (managedContainers.indexOf(bjson.id) == -1) {
-        set.status = 400;
-        return "ERR: DeblokManager doesn't manage this container.";
-    }
+    
     try {
         bjson = JSON.parse(b);
     } catch (e) {
         console.error(e);
         set.status = 400;
         return "ERR: Bad JSON";
+    }
+    if (managedContainers.indexOf(bjson.id) == -1) {
+        set.status = 400;
+        return "ERR: DeblokManager doesn't manage this container.";
     }
     if (sessionKeepalive[bjson.id]) {
         addToKeepalive(bjson.id,config.policy.keepalive.initial * 10000) // 5 mins
