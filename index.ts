@@ -128,7 +128,9 @@ function readableToBytes(ramString: string): number {
         throw new Error("Invalid RAM format. Use G, M, or B.");
     }
 }
-
+server.get("/policy/", async () => {
+    return config.policy;
+});
 server.post("/containers/create", async ({ body, set }) => {
     let b:any=body // the body variable is actually a string, this is here to fix a ts error
     var bjson:any={"name":"","image":"","resources":{"ram":"","cores":""},"ports":""} // boilerplate to not piss off TypeScript.
