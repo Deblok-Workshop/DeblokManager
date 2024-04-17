@@ -6,6 +6,7 @@ if (arch != 'x64' && arch != "ia32" && arch != "x86_64") {
 
 import { Elysia, error,t } from "elysia";
 import { basicAuth } from '@eelkevdbos/elysia-basic-auth';
+
 import Docker from "dockerode";
 import Bun from "bun";
 import fs from 'fs';
@@ -15,7 +16,7 @@ const conffile = Bun.file("config/config.json");
 const config = JSON.parse(await conffile.text());
 let sessionKeepalive:any[] = []
 let managedContainers:string[] = []
-
+process.env["BASIC_AUTH_CREDENTIALS"] = config.authentication["username"]+":"+config.authentication["password"]
 
 
 async function ping(url: string): Promise<string> {
@@ -388,9 +389,6 @@ server.get("/ports/list", async ({body, set}) => {
   return ["There was an error retrieving the availiable ports. Are you on x86_64?",e]
  }
  });
-
-// TODO:
-// Make /container/pause and /container/unpause
 
 
 console.log(`Listening on port ${config.webserver.port} or`);
