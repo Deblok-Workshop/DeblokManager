@@ -15,7 +15,7 @@ import fs from 'fs';
 const conffile = Bun.file("config/config.json");
 const config = JSON.parse(await conffile.text());
 let sessionKeepalive:any[] = []
-let managedContainers:string[] = []
+let managedContainers:any[] = []
 process.env["BASIC_AUTH_CREDENTIALS"] = config.authentication["username"]+":"+config.authentication["password"]
 
 
@@ -351,6 +351,7 @@ server.post("/containers/keepalive", async ({ body, set }) => {
         set.status = 400;
         return "ERR: Bad JSON";
     }
+    console.log(managedContainers)
     if (managedContainers.indexOf(bjson.id) == -1) {
         set.status = 400;
         return "ERR: DeblokManager doesn't manage this container.";
