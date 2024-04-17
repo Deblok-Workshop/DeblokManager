@@ -351,7 +351,7 @@ server.post("/containers/keepalive", async ({ body, set }) => {
         set.status = 400;
         return "ERR: Bad JSON";
     }
-    console.log(managedContainers)
+    console.log(managedContainers,bjson.id)
     if (!managedContainers.includes(bjson.id)) {
         set.status = 400;
         return "ERR: DeblokManager doesn't manage this container.";
