@@ -358,7 +358,7 @@ server.post("/containers/keepalive", async ({ body, set }) => {
         return "ERR: DeblokManager doesn't manage this container.";
     }
     if (sessionKeepalive[bjson.id]) {
-        addToKeepalive(bjson.id,config.policy.keepalive.initial * 10000) // 5 mins
+        addToKeepalive(bjson.id,config.policy.keepalive.initial * 1000) // 5 mins
         return "Updated."
     } else {
         set.status = 400
