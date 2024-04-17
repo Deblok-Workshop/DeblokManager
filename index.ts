@@ -239,7 +239,7 @@ server.post("/containers/kill", async ({ body, set }) => {
         set.status = 400;
         return "ERR: Bad JSON";
     }
-    if (managedContainers.indexOf(bjson.id) == -1) {
+    if (!managedContainers.includes(bjson.id)) {
         set.status = 400;
         return "ERR: DeblokManager doesn't manage this container.";
     }
@@ -268,7 +268,7 @@ server.post("/containers/delete", async ({ body, set }) => {
         set.status = 400;
         return "ERR: Bad JSON";
     }
-    if (managedContainers.indexOf(bjson.id) == -1) {
+    if (!managedContainers.includes(bjson.id)) {
         set.status = 400;
         return "ERR: DeblokManager doesn't manage this container.";
     }
@@ -296,7 +296,7 @@ server.post("/containers/pause", async ({ body, set }) => {
         set.status = 400;
         return "ERR: Bad JSON";
     }
-    if (managedContainers.indexOf(bjson.id) == -1) {
+    if (!managedContainers.includes(bjson.id)) {
         set.status = 400;
         return "ERR: DeblokManager doesn't manage this container.";
     }
@@ -324,7 +324,7 @@ server.post("/containers/unpause", async ({ body, set }) => {
         set.status = 400;
         return "ERR: Bad JSON";
     }
-    if (managedContainers.indexOf(bjson.id) == -1) {
+    if (!managedContainers.includes(bjson.id)) {
         set.status = 400;
         return "ERR: DeblokManager doesn't manage this container.";
     }
@@ -352,7 +352,7 @@ server.post("/containers/keepalive", async ({ body, set }) => {
         return "ERR: Bad JSON";
     }
     console.log(managedContainers)
-    if (managedContainers.indexOf(bjson.id) == -1) {
+    if (!managedContainers.includes(bjson.id)) {
         set.status = 400;
         return "ERR: DeblokManager doesn't manage this container.";
     }
