@@ -217,9 +217,10 @@ server.post("/containers/create", async ({ body, set }) => {
     try {
         
         const result:any = await createContainer(containerOptions);
-        console.log(result)
+        
         sessionKeepalive.push([result,Date.now() + config.policy.keepalive.initial * 1000])
         managedContainers.push(result)
+        console.log(result,sessionKeepalive,managedContainers)
         return result;
     } catch (err) {
         set.status = 500;
