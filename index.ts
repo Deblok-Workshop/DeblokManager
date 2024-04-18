@@ -370,27 +370,23 @@ server.post("/containers/keepalive", async ({ body, set }) => {
     }
 })
 
-import { networkConnections } from 'systeminformation';
-function getPorts(): number[] {
-    
+import portscanner from 'portscanner';
+
+async function getPorts(): Promise<number[]> {
     const range: number[] = config["port-range"].split('-').map(Number);
     const startPort: number = range[0];
     const endPort: number = range[1];
 
-    const usedPorts: number[] = Object.values(networkConnections())
-        .filter((connection:any) => connection.protocol === 'TCP' || connection.protocol === 'UDP')
-        .map((connection:any) => connection.localport);
-
     const availablePorts: number[] = [];
     for (let port = startPort; port <= endPort; port++) {
-        if (!usedPorts.includes(port)) {
+        const isPortOpen = await portscanner.checkPortStatus(port);
+        if (isPortOpen === 'closed') {
             availablePorts.push(port);
         }
     }
 
     return availablePorts;
 }
-
 server.get("/ports/list", async ({body, set}) => {
  try {
     return getPorts()
