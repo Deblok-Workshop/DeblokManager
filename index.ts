@@ -220,7 +220,6 @@ server.post("/containers/create", async ({ body, set }) => {
         
         sessionKeepalive.push([result,Date.now() + config.policy.keepalive.initial * 1000])
         managedContainers.push(result)
-        console.log(result,sessionKeepalive,managedContainers)
         return result;
     } catch (err) {
         set.status = 500;
@@ -352,7 +351,6 @@ server.post("/containers/keepalive", async ({ body, set }) => {
         set.status = 400;
         return "ERR: Bad JSON";
     }
-    console.log(managedContainers,bjson.id)
     if (!managedContainers.includes(bjson.id)) {
         set.status = 400;
         return "ERR: DeblokManager doesn't manage this container.";
