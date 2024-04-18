@@ -357,7 +357,13 @@ server.post("/containers/keepalive", async ({ body, set }) => {
         set.status = 400;
         return "ERR: DeblokManager doesn't manage this container.";
     }
-    if (sessionKeepalive[bjson.id]) {
+    let containerExists = false
+    for (let i = 0;i < sessionKeepalive.length;i++) {
+        if (sessionKeepalive[i][0] == bjson.id) {
+            containerExists = true; break;
+        }
+    }
+    if (containerExists) {
         addToKeepalive(bjson.id,config.policy.keepalive.initial * 1000) // 5 mins
         return "Updated."
     } else {
@@ -416,14 +422,14 @@ if (process.argv.includes('--no-whitelist')) {
 function removeKeepalive(id:string) {
     for (let i = 0;i < sessionKeepalive.length;i++) {
         if (sessionKeepalive[i][0] == id) {
-            sessionKeepalive.splice(i,1)
+            sessionKeepalive.splice(i,1);break;
         }
     }
 }
 function addToKeepalive(id:string,msAdded:number) {
     for (let i = 0;i < sessionKeepalive.length;i++) {
         if (sessionKeepalive[i][0] == id) {
-            sessionKeepalive[i][1] = sessionKeepalive[i][1] + msAdded
+            sessionKeepalive[i][1] = sessionKeepalive[i][1] + msAdded;break;
         }
     }
 }
