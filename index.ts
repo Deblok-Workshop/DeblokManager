@@ -340,6 +340,33 @@ server.post("/containers/unpause", async ({ body, set }) => {
     }
 });
 
+server.post("/containers/restart", async ({ body, set }) => {
+    const b:any=body // the body variable is actually a string, this is here to fix a ts error
+    var bjson:any={id:""} // boilerplate to not piss off TypeScript.
+   
+    try {
+        bjson = JSON.parse(b);
+    } catch (e) {
+        console.error(e);
+        set.status = 400;
+        return "ERR: Bad JSON";
+    }
+    if (!managedContainers.includes(bjson.id)) {
+        set.status = 400;
+        return "ERR: DeblokManager doesn't manage this container.";
+    }
+    try {
+        const container = docker.getContainer(bjson.id);
+        await container.restart();
+        addToKeepalive(bjson.id,config.policy.keepalive.initial * 1000) // 1 minute
+        return `${bjson.id}`;
+    } catch (err) {
+        set.status = 500;
+        console.error(err);
+        return err;
+    }
+});
+
 server.post("/containers/keepalive", async ({ body, set }) => {
     const b:any=body // the body variable is actually a string, this is here to fix a ts error
     var bjson:any={id:""} // boilerplate to not piss off TypeScript.
