@@ -57,8 +57,13 @@ if (await ping('http://127.0.0.1:2375/_ping') == "down") {
     console.error(' - The Docker Daemon (dockerd) needs to be running via TCP (:2375).');
     process.exit(2);
 }
+let docker:any= undefined;
+if (process.argv[2] == "--socket") {
+    docker = new Docker();
+}  else {
+    docker = new Docker({protocol:'http',host: '127.0.0.1', port: 2375, version: 'v1.44' });
+}
 
-const docker = new Docker({protocol:'http',host: '127.0.0.1', port: 2375, version: 'v1.44' });
 
 let netaddr = '[::1]';
 netaddr = require('os').hostname();
