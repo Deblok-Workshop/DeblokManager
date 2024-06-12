@@ -12,7 +12,7 @@
     "@eelkevdbos/elysia-basic-auth": "^1.4.1",
     "@types/dockerode": "^3.3.23",
     "@types/portscanner": "^2.1.4",
-    "cpu-features": "^0.0.9",
+    "cpu-features": "^0.0.10",
     "dockerode": "4.0.2",
     "elysia": "^1.0.0",
     "http-proxy": "^1.18.1",
