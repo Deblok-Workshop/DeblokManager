@@ -14,7 +14,7 @@
     "@types/portscanner": "^2.1.4",
     "cpu-features": "^0.0.9",
     "dockerode": "4.0.2",
-    "elysia": "^0.8.16",
+    "elysia": "^1.0.0",
     "http-proxy": "^1.18.1",
     "node-http-proxy": "^0.2.4",
     "portscanner": "^2.2.0",
